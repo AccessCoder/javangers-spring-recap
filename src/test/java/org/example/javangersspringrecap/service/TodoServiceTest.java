@@ -17,10 +17,11 @@ class TodoServiceTest {
 
     private final TodoRepo mockRepo = Mockito.mock(TodoRepo.class);
     private final IdService mockIdService = Mockito.mock(IdService.class);
+    private final ChatGptService mockChatGptService = Mockito.mock(ChatGptService.class);
 
     @Test
     void getAllTodos_sholdReturnListOfOneTodo_whenCalled() {
-        TodoService service = new TodoService(mockRepo, mockIdService);
+        TodoService service = new TodoService(mockRepo, mockIdService, mockChatGptService);
         Todo todo = new Todo("1", "Testen", TodoStatus.OPEN);
         List<Todo> expected = List.of(todo);
         Mockito.when(mockRepo.findAll()).thenReturn(List.of(todo));
@@ -33,11 +34,12 @@ class TodoServiceTest {
 
     @Test
     void addTodo() {
-        TodoService service = new TodoService(mockRepo, mockIdService);
+        TodoService service = new TodoService(mockRepo, mockIdService, mockChatGptService);
         TodoDto todoDto = new TodoDto("Testen", TodoStatus.OPEN);
         Todo expected = new Todo("1", "Testen", TodoStatus.OPEN);
 
         Mockito.when(mockIdService.generateId()).thenReturn("1");
+        Mockito.when(mockChatGptService.getOpenAiSpellingCheck("Testen")).thenReturn("Testen");
 
         Todo actual = service.addTodo(todoDto);
 
@@ -48,7 +50,7 @@ class TodoServiceTest {
 
     @Test
     void getById() throws TodoNotFoundException {
-        TodoService service = new TodoService(mockRepo, mockIdService);
+        TodoService service = new TodoService(mockRepo, mockIdService, mockChatGptService);
         Todo todo = new Todo("1", "Testen", TodoStatus.OPEN);
 
         Mockito.when(mockRepo.findById("1")).thenReturn(Optional.of(todo));
@@ -60,7 +62,7 @@ class TodoServiceTest {
 
     @Test
     void getById_shouldThrowException_whenCalledWithInvalidID() {
-        TodoService service = new TodoService(mockRepo, mockIdService);
+        TodoService service = new TodoService(mockRepo, mockIdService, mockChatGptService);
         Mockito.when(mockRepo.findById("1")).thenReturn(Optional.empty());
 
         try{
@@ -74,7 +76,7 @@ class TodoServiceTest {
 
     @Test
     void updateTodo() throws TodoNotFoundException {
-        TodoService service = new TodoService(mockRepo, mockIdService);
+        TodoService service = new TodoService(mockRepo, mockIdService, mockChatGptService);
         Todo todo = new Todo("1", "Testen", TodoStatus.IN_PROGRESS);
 
         Mockito.when(mockRepo.existsById("1")).thenReturn(true);
@@ -87,7 +89,7 @@ class TodoServiceTest {
 
     @Test
     void updateTodo_shouldThrowException_whenCalledWithInvalidId()  {
-        TodoService service = new TodoService(mockRepo, mockIdService);
+        TodoService service = new TodoService(mockRepo, mockIdService, mockChatGptService);
         Todo todo = new Todo("1", "Testen", TodoStatus.IN_PROGRESS);
 
         Mockito.when(mockRepo.existsById("1")).thenReturn(false);
@@ -103,7 +105,7 @@ class TodoServiceTest {
 
     @Test
     void deleteTodo() throws TodoNotFoundException {
-        TodoService service = new TodoService(mockRepo, mockIdService);
+        TodoService service = new TodoService(mockRepo, mockIdService, mockChatGptService);
         Todo expected = new Todo("1", "Testen", TodoStatus.IN_PROGRESS);
         Mockito.when(mockRepo.existsById("1")).thenReturn(true);
         Mockito.when(mockRepo.findById("1")).thenReturn(Optional.of(expected));
@@ -116,7 +118,7 @@ class TodoServiceTest {
 
     @Test
     void deleteTodo_shouldThrowException_whenCalledWithInvalidId()  {
-        TodoService service = new TodoService(mockRepo, mockIdService);
+        TodoService service = new TodoService(mockRepo, mockIdService, mockChatGptService);
         Mockito.when(mockRepo.existsById("1")).thenReturn(false);
 
             try {

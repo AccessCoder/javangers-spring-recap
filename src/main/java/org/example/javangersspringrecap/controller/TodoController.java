@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.javangersspringrecap.dto.TodoDto;
 import org.example.javangersspringrecap.exceptions.TodoNotFoundException;
 import org.example.javangersspringrecap.model.Todo;
+import org.example.javangersspringrecap.model.TodoStatus;
 import org.example.javangersspringrecap.service.TodoService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +32,11 @@ public class TodoController {
         return service.getById(id);
     }
 
+    @GetMapping("/filter")
+    public List<Todo> filterTodos(@RequestParam TodoStatus status){
+        return service.filterTodos(status);
+    }
+
     @PostMapping
     public Todo addTodo(@RequestBody TodoDto newTodo){
         return service.addTodo(newTodo);
@@ -43,4 +51,5 @@ public class TodoController {
     public Todo deleteTodo(@PathVariable String id) throws TodoNotFoundException {
         return service.deleteTodo(id);
     }
+
 }

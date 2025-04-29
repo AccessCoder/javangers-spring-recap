@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.javangersspringrecap.dto.TodoDto;
 import org.example.javangersspringrecap.exceptions.TodoNotFoundException;
 import org.example.javangersspringrecap.model.Todo;
+import org.example.javangersspringrecap.model.TodoStatus;
 import org.example.javangersspringrecap.repo.TodoRepo;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +16,12 @@ public class TodoService {
 
     private final TodoRepo repo;
     private final IdService idService;
+    private final ChatGptService chatGptService;
 
-    public TodoService(TodoRepo repo, IdService idService) {
+    public TodoService(TodoRepo repo, IdService idService, ChatGptService chatGptService) {
         this.repo = repo;
         this.idService = idService;
+        this.chatGptService = chatGptService;
     }
 
 
@@ -29,7 +32,7 @@ public class TodoService {
     public Todo addTodo(TodoDto newTodo) {
         Todo todo = new Todo(
                 idService.generateId(),
-                newTodo.description(),
+                chatGptService.getOpenAiSpellingCheck(newTodo.description()),
                 newTodo.status()
         );
         repo.save(todo);
@@ -39,6 +42,14 @@ public class TodoService {
     public Todo getById(String id) throws TodoNotFoundException {
         return repo.findById(id)
                 .orElseThrow(() -> new TodoNotFoundException("Todo with ID: " + id + " not found!"));
+    }
+
+    public List<Todo> filterTodos(TodoStatus status) {
+//        TodoStatus requestedStatus = TodoStatus.readValue(status);
+//        return repo.findAll().stream()
+//                .filter(todo -> todo.status().equals(requestedStatus))
+//                .toList();
+        return repo.findAllByStatus(status);
     }
 
     public Todo updateTodo(Todo updatedTodo) throws TodoNotFoundException {
@@ -60,4 +71,6 @@ public class TodoService {
             throw new TodoNotFoundException("Todo with ID: " + id + " not found!");
         }
     }
+
+
 }
